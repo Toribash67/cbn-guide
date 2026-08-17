@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { buildAllJson } from "./generate.mjs";
+import { buildAllJson, buildAllMods } from "./generate.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const gameDir = join(here, "__fixtures__", "game");
@@ -54,4 +54,24 @@ test("throws on malformed JSON with file path in error", async () => {
       return true;
     },
   );
+});
+
+test("builds all_mods.json keyed by MOD_INFO id", async () => {
+  const mods = await buildAllMods(gameDir);
+
+  assert.deepEqual(Object.keys(mods), ["testmod"]);
+  const mod = mods.testmod;
+  assert.equal(mod.info.type, "MOD_INFO");
+  assert.equal(mod.info.id, "testmod");
+  assert.equal(mod.info.__filename, "data/mods/testmod/modinfo.json#L2-L8");
+
+  // MOD_INFO is surfaced as `info`, not repeated in `data`.
+  assert.ok(!mod.data.some((o) => o.type === "MOD_INFO"));
+  const widget = mod.data.find((o) => o.id === "mod_widget");
+  assert.equal(widget.__filename, "data/mods/testmod/content.json#L1-L1");
+});
+
+test("skips mod dirs without a MOD_INFO object", async () => {
+  const mods = await buildAllMods(gameDir);
+  assert.ok(!("not-a-mod" in mods));
 });

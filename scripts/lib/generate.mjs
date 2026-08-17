@@ -54,3 +54,35 @@ export async function buildAllJson(gameDir, opts) {
 
   return { build_number: buildNumber, release, data };
 }
+
+export async function buildAllMods(gameDir) {
+  const modsRoot = join(gameDir, "data", "mods");
+  let modDirs;
+  try {
+    modDirs = (await readdir(modsRoot, { withFileTypes: true }))
+      .filter((d) => d.isDirectory())
+      .map((d) => d.name)
+      .sort();
+  } catch {
+    return {}; // no data/mods dir
+  }
+
+  const out = {};
+  for (const modName of modDirs) {
+    const files = await listJsonFiles(join(modsRoot, modName));
+    let info = null;
+    const data = [];
+    for (const file of files) {
+      for (const obj of await readObjects(gameDir, file)) {
+        if (obj.type === "MOD_INFO") {
+          info = obj;
+        } else {
+          data.push(obj);
+        }
+      }
+    }
+    if (!info || typeof info.id !== "string") continue; // not a real mod
+    out[info.id] = { info, data };
+  }
+  return out;
+}
