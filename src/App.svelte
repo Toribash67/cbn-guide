@@ -603,7 +603,7 @@ function getLanguageName(code: string): string {
                 _context: INTRO_DASHBOARD_CONTEXT,
               })}:</span>
             <a href="https://github.com/Toribash67" target="_blank"
-              >Toribash67</a>
+              >Martin Börjeson</a>
           </div>
           <div class="footer-item">
             <span class="spec-label"
