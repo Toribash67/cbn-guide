@@ -12,6 +12,8 @@ import {
   parsePalette,
   parsePlaceMappingAlternative,
   repeatChance,
+  resolveVehicleField,
+  vehicleGroupMembership,
 } from "./spawnLocations";
 import { makeTestCBNData } from "../../data.test-helpers";
 import type { ItemGroupData, Mapgen } from "../../types";
@@ -1392,5 +1394,60 @@ describe("chance > 100", () => {
     expect(entry.prob).toBeCloseTo(1.0);
     // expected should reflect the actual average count (1.5)
     expect(entry.expected).toBeCloseTo(1.5);
+  });
+});
+
+describe("resolveVehicleField()", () => {
+  it("treats a bare id with no group as a 100% single-entry group", () => {
+    expect(resolveVehicleField(emptyData, "car")).toStrictEqual(
+      new Map([["car", 1]]),
+    );
+  });
+  it("resolves an explicit group into normalized weight fractions", () => {
+    const data = makeTestCBNData([
+      {
+        type: "vehicle_group",
+        id: "g",
+        vehicles: [
+          ["car", 700],
+          ["bike", 300],
+        ],
+      },
+    ]);
+    expect(resolveVehicleField(data, "g")).toStrictEqual(
+      new Map([
+        ["car", 0.7],
+        ["bike", 0.3],
+      ]),
+    );
+  });
+  it("treats an unknown id as itself at 100%", () => {
+    expect(resolveVehicleField(emptyData, "nonexistent")).toStrictEqual(
+      new Map([["nonexistent", 1]]),
+    );
+  });
+});
+
+describe("vehicleGroupMembership()", () => {
+  it("indexes each vehicle to its groups with weight and group total", () => {
+    const data = makeTestCBNData([
+      {
+        type: "vehicle_group",
+        id: "city_vehicles",
+        vehicles: [
+          ["car", 700],
+          ["bike", 300],
+        ],
+      },
+      { type: "vehicle_group", id: "road_vehicles", vehicles: [["car", 400]] },
+    ]);
+    const got = vehicleGroupMembership(data);
+    expect(got.get("car")).toStrictEqual([
+      { group_id: "city_vehicles", weight: 700, groupTotal: 1000 },
+      { group_id: "road_vehicles", weight: 400, groupTotal: 400 },
+    ]);
+    expect(got.get("bike")).toStrictEqual([
+      { group_id: "city_vehicles", weight: 300, groupTotal: 1000 },
+    ]);
   });
 });
