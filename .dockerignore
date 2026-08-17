@@ -1,0 +1,10 @@
+node_modules
+.git
+game
+Cataclysm-BN
+_test
+_rendered
+dist
+dev-dist
+docs
+bench-results

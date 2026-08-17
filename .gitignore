@@ -409,3 +409,7 @@ $RECYCLE.BIN/
 
 # Sentry Config File
 .env.sentry-build-plugin
+
+# Generated game data (baked into the image at build time)
+/public/data/
+/public/builds.json

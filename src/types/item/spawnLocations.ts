@@ -517,6 +517,30 @@ export const furnitureByOMSAppearance = lazily((data: CBNData) =>
 export const terrainByOMSAppearance = lazily((data: CBNData) =>
   computeLootByOMSAppearance(data, (mg) => getTerrainForMapgen(data, mg)),
 );
+export const vehicleByOMSAppearance = lazily((data: CBNData) =>
+  computeLootByOMSAppearance(data, (mg) => getVehiclesForMapgen(data, mg)),
+);
+
+export type VehicleGroupMembership = {
+  group_id: string;
+  weight: number;
+  groupTotal: number;
+};
+export const vehicleGroupMembership = lazily((data: CBNData) => {
+  const membership = new Map<string, VehicleGroupMembership[]>();
+  for (const group of data.byType("vehicle_group")) {
+    if (!group.id) continue;
+    const members: [string, number][] = (group.vehicles ?? []).map((v) =>
+      Array.isArray(v) ? [v[0], v[1]] : [v, 1],
+    );
+    const groupTotal = members.reduce((m, [, w]) => m + w, 0);
+    for (const [vid, weight] of members) {
+      if (!membership.has(vid)) membership.set(vid, []);
+      membership.get(vid)!.push({ group_id: group.id, weight, groupTotal });
+    }
+  }
+  return membership;
+});
 
 export const getOMSByAppearance = lazily(
   (data: CBNData): Map<string | undefined, string[]> => {
@@ -674,6 +698,26 @@ function getMapgenValueDistribution(
     }
   }
   return new Map();
+}
+
+export function resolveVehicleField(
+  data: CBNData,
+  field: raw.MapgenValue,
+): Map<string, number> {
+  const result = new Map<string, number>();
+  for (const [id, prob] of getMapgenValueDistribution(field).entries()) {
+    const group = data.byIdMaybe("vehicle_group", id);
+    const members: [string, number][] = group
+      ? (group.vehicles ?? []).map((v) =>
+          Array.isArray(v) ? [v[0], v[1]] : [v, 1],
+        )
+      : [[id, 1]];
+    const total = members.reduce((m, [, w]) => m + w, 0) || 1;
+    for (const [vid, weight] of members) {
+      result.set(vid, (result.get(vid) ?? 0) + prob * (weight / total));
+    }
+  }
+  return result;
 }
 
 /**
@@ -915,6 +959,36 @@ export function getFurnitureForMapgen(data: CBNData, mapgen: raw.Mapgen): Loot {
   const loot = collection(items);
   loot.delete("f_null");
   furnitureForMapgenCache.set(mapgen, loot);
+  return loot;
+}
+
+const vehiclesForMapgenCache = new WeakMap<raw.Mapgen, Loot>();
+export function getVehiclesForMapgen(data: CBNData, mapgen: raw.Mapgen): Loot {
+  if (vehiclesForMapgenCache.has(mapgen))
+    return vehiclesForMapgenCache.get(mapgen)!;
+  if (!isJSONMapgen(mapgen)) {
+    const loot = new Map();
+    vehiclesForMapgenCache.set(mapgen, loot);
+    return loot;
+  }
+  const palette = parseVehiclePalette(data, mapgen.object);
+  const place_vehicles: Loot[] = (mapgen.object.place_vehicles ?? []).map(
+    ({ vehicle, chance = DEFAULT_CHANCE_PERCENTAGE }) => {
+      const loot: Loot = new Map();
+      for (const [vid, frac] of resolveVehicleField(data, vehicle).entries()) {
+        const p = (chance / 100) * frac;
+        loot.set(vid, { prob: p, expected: p });
+      }
+      return loot;
+    },
+  );
+  const additional_items = collection([...place_vehicles]);
+  const symbols = new Set(palette.keys());
+  const counts = countSymbols(mapgen.object.rows, symbols);
+  const items: Loot[] = [...lootFromCounts(counts, palette)];
+  items.push(additional_items);
+  const loot = collection(items);
+  vehiclesForMapgenCache.set(mapgen, loot);
   return loot;
 }
 
@@ -1456,6 +1530,35 @@ export function parseFurniturePalette(
     ...palettes,
   ]);
   furniturePaletteCache.set(palette, ret);
+  return ret;
+}
+
+const vehiclePaletteCache = new WeakMap<raw.PaletteData, Map<string, Loot>>();
+export function parseVehiclePalette(
+  data: CBNData,
+  palette: raw.PaletteData,
+): Map<string, Loot> {
+  if (vehiclePaletteCache.has(palette))
+    return vehiclePaletteCache.get(palette)!;
+  const vehicles = parsePlaceMapping(
+    palette.vehicles,
+    function* ({ vehicle, chance = DEFAULT_CHANCE_PERCENTAGE }) {
+      const loot: Loot = new Map();
+      for (const [vid, frac] of resolveVehicleField(data, vehicle).entries()) {
+        const p = (chance / 100) * frac;
+        loot.set(vid, { prob: p, expected: p });
+      }
+      yield loot;
+    },
+  );
+  const palettes = processPaletteDistributions(
+    palette.palettes,
+    parseVehiclePalette,
+    data,
+    palette,
+  );
+  const ret = mergePalettes([vehicles, ...palettes]);
+  vehiclePaletteCache.set(palette, ret);
   return ret;
 }
 

@@ -5,5 +5,8 @@
 /schema.json
 /tmp/
 /bench-results
+/docs/superpowers/
+/.superpowers/
 pnpm-lock.yaml
 pnpm-workspace.yaml
+/scripts/lib/__fixtures__/

@@ -1,0 +1,9 @@
+[
+  {
+    "type": "MOD_INFO",
+    "id": "testmod",
+    "name": "Test Mod",
+    "description": "A mod for tests.",
+    "category": "content"
+  }
+]

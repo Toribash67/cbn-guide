@@ -104,11 +104,19 @@ function toNormalizedSet(values: Iterable<string>): Set<string> {
 }
 
 function getChunkSourceBase(fileUrl: string): string {
-  const parsed = new URL(fileUrl);
-  parsed.pathname = parsed.pathname.replace(/\/[^/]*$/, "/");
-  parsed.search = "";
-  parsed.hash = "";
-  return parsed.toString();
+  // Absolute URL (has a scheme): resolve directly.
+  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(fileUrl)) {
+    const parsed = new URL(fileUrl);
+    parsed.pathname = parsed.pathname.replace(/\/[^/]*$/, "/");
+    parsed.search = "";
+    parsed.hash = "";
+    return parsed.toString();
+  }
+  // Same-origin (root-relative) URL — the default for this self-hosted
+  // build. Strip query/hash and the trailing path segment without
+  // requiring an absolute base for `URL`.
+  const path = fileUrl.split("#")[0].split("?")[0];
+  return path.replace(/\/[^/]*$/, "/");
 }
 
 function totalSpritesInChunks(chunks: Pick<TileChunk, "nx" | "ny">[]): number {
@@ -152,7 +160,15 @@ function offsetContributionIndices(
 
 function resolvePath(baseUrl: string, file: string): string {
   const encoded = encodePath(file);
-  return new URL(encoded, ensureTrailingSlash(baseUrl)).toString();
+  const base = ensureTrailingSlash(baseUrl);
+  // Absolute base (has a scheme): resolve directly.
+  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(base)) {
+    return new URL(encoded, base).toString();
+  }
+  // Same-origin (root-relative) base — the default for this self-hosted build.
+  // Resolve against a throwaway absolute origin so URL still handles ".."
+  // traversal and percent-encoding, then return the same-origin path.
+  return new URL(encoded, `http://cbn.invalid${base}`).pathname;
 }
 
 function getModBaseUrl(version: string, modId: string): string {

@@ -1,0 +1,6 @@
+[
+  "a string element",
+  { "id": "obj1", "type": "GENERIC" },
+  42,
+  { "id": "obj2", "type": "GENERIC" }
+]

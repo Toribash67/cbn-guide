@@ -1,0 +1,14 @@
+services:
+  cbn-guide-web:
+    image: ghcr.io/toribash67/cbn-guide-web:latest
+    container_name: cbn-guide-web
+    restart: unless-stopped
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
+    ports:
+      - "18082:80"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
