@@ -517,6 +517,9 @@ export const furnitureByOMSAppearance = lazily((data: CBNData) =>
 export const terrainByOMSAppearance = lazily((data: CBNData) =>
   computeLootByOMSAppearance(data, (mg) => getTerrainForMapgen(data, mg)),
 );
+export const vehicleByOMSAppearance = lazily((data: CBNData) =>
+  computeLootByOMSAppearance(data, (mg) => getVehiclesForMapgen(data, mg)),
+);
 
 export type VehicleGroupMembership = {
   group_id: string;
@@ -956,6 +959,36 @@ export function getFurnitureForMapgen(data: CBNData, mapgen: raw.Mapgen): Loot {
   const loot = collection(items);
   loot.delete("f_null");
   furnitureForMapgenCache.set(mapgen, loot);
+  return loot;
+}
+
+const vehiclesForMapgenCache = new WeakMap<raw.Mapgen, Loot>();
+export function getVehiclesForMapgen(data: CBNData, mapgen: raw.Mapgen): Loot {
+  if (vehiclesForMapgenCache.has(mapgen))
+    return vehiclesForMapgenCache.get(mapgen)!;
+  if (!isJSONMapgen(mapgen)) {
+    const loot = new Map();
+    vehiclesForMapgenCache.set(mapgen, loot);
+    return loot;
+  }
+  const palette = parseVehiclePalette(data, mapgen.object);
+  const place_vehicles: Loot[] = (mapgen.object.place_vehicles ?? []).map(
+    ({ vehicle, chance = DEFAULT_CHANCE_PERCENTAGE }) => {
+      const loot: Loot = new Map();
+      for (const [vid, frac] of resolveVehicleField(data, vehicle).entries()) {
+        const p = (chance / 100) * frac;
+        loot.set(vid, { prob: p, expected: p });
+      }
+      return loot;
+    },
+  );
+  const additional_items = collection([...place_vehicles]);
+  const symbols = new Set(palette.keys());
+  const counts = countSymbols(mapgen.object.rows, symbols);
+  const items: Loot[] = [...lootFromCounts(counts, palette)];
+  items.push(additional_items);
+  const loot = collection(items);
+  vehiclesForMapgenCache.set(mapgen, loot);
   return loot;
 }
 
@@ -1497,6 +1530,35 @@ export function parseFurniturePalette(
     ...palettes,
   ]);
   furniturePaletteCache.set(palette, ret);
+  return ret;
+}
+
+const vehiclePaletteCache = new WeakMap<raw.PaletteData, Map<string, Loot>>();
+export function parseVehiclePalette(
+  data: CBNData,
+  palette: raw.PaletteData,
+): Map<string, Loot> {
+  if (vehiclePaletteCache.has(palette))
+    return vehiclePaletteCache.get(palette)!;
+  const vehicles = parsePlaceMapping(
+    palette.vehicles,
+    function* ({ vehicle, chance = DEFAULT_CHANCE_PERCENTAGE }) {
+      const loot: Loot = new Map();
+      for (const [vid, frac] of resolveVehicleField(data, vehicle).entries()) {
+        const p = (chance / 100) * frac;
+        loot.set(vid, { prob: p, expected: p });
+      }
+      yield loot;
+    },
+  );
+  const palettes = processPaletteDistributions(
+    palette.palettes,
+    parseVehiclePalette,
+    data,
+    palette,
+  );
+  const ret = mergePalettes([vehicles, ...palettes]);
+  vehiclePaletteCache.set(palette, ret);
   return ret;
 }
 
