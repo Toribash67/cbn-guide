@@ -15,6 +15,7 @@ import { groupBy } from "../utils/collections";
 import ThingLink from "./ThingLink.svelte";
 import ItemTable from "./item/ItemTable.svelte";
 import VehicleView from "./VehicleView.svelte";
+import VehicleSpawns from "./vehicle/VehicleSpawns.svelte";
 
 import { gameSingularName } from "../i18n/game-locale";
 
@@ -59,5 +60,7 @@ partsCounted.sort((a, b) => {
     </LimitedList>
   </section>
 {/if}
+
+<VehicleSpawns vehicle_id={item.id} />
 
 <ItemTable loot={data.flattenItemGroupLoot(itemGroupFromVehicle(item))} />
