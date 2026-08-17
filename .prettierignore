@@ -5,5 +5,6 @@
 /schema.json
 /tmp/
 /bench-results
+/docs/superpowers/
 pnpm-lock.yaml
 pnpm-workspace.yaml
