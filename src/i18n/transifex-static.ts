@@ -137,6 +137,8 @@ export function translateType(type: keyof SupportedTypesWithMapped): string {
       return t("Vehicles");
     case "vehicle_part":
       return t("Vehicle Parts");
+    case "vehicle_group":
+      return t("Vehicle Groups");
     case "vitamin":
       return t("Vitamins");
     case "weapon_category":

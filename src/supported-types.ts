@@ -63,6 +63,7 @@ const SUPPORTED_TYPE_KEYS = {
   uncraft: null,
   vehicle: null,
   vehicle_part: null,
+  vehicle_group: null,
   vitamin: null,
   weapon_category: null,
   MONSTER_BLACKLIST: null,
