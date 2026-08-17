@@ -116,99 +116,32 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
-            urlPattern:
-              /^https:\/\/data\.cataclysmbn-guide\.com\/builds\.json$/,
+            // Same-origin build list — check network first, fall back to cache offline.
+            urlPattern: /\/builds\.json$/,
             handler: "NetworkFirst",
             options: {
-              cacheName: "builds-cache-v2",
+              cacheName: "builds-cache-v3",
               expiration: {
                 maxEntries: 1,
-                maxAgeSeconds: 60 * 15, // 15 minutes - align with nightly freshness
+                maxAgeSeconds: 60 * 15,
               },
               cacheableResponse: {
                 statuses: [200],
               },
-              fetchOptions: {
-                mode: "cors",
-                credentials: "omit",
-              },
             },
           },
           {
-            // The latest nightly / updates daily
-            urlPattern:
-              /^https:\/\/data\.cataclysmbn-guide\.com\/data\/nightly\//,
+            // Same-origin baked game data (all.json / all_mods.json under data/stable/).
+            urlPattern: /\/data\/stable\//,
             handler: "NetworkFirst",
             options: {
-              cacheName: "nightly-cache-v2",
-              expiration: {
-                maxEntries: 15,
-                maxAgeSeconds: 60 * 15, // 15 minutes - align with Edge cache
-              },
-              cacheableResponse: {
-                statuses: [200],
-              },
-              fetchOptions: {
-                mode: "cors",
-                credentials: "omit",
-              },
-            },
-          },
-          {
-            // The latest stable / rarely updates
-            urlPattern:
-              /^https:\/\/data\.cataclysmbn-guide\.com\/data\/stable\//,
-            handler: "StaleWhileRevalidate",
-            options: {
-              cacheName: "stable-cache-v2",
+              cacheName: "gamedata-cache-v3",
               expiration: {
                 maxEntries: 15,
                 maxAgeSeconds: 60 * 60 * 24 * 30,
               },
               cacheableResponse: {
                 statuses: [200],
-              },
-              fetchOptions: {
-                mode: "cors",
-                credentials: "omit",
-              },
-            },
-          },
-          {
-            // Stable named releases / never updates
-            urlPattern: /^https:\/\/data\.cataclysmbn-guide\.com\/data\/v/,
-            handler: "CacheFirst",
-            options: {
-              cacheName: "stable-named-cache-v2",
-              expiration: {
-                maxEntries: 30,
-                maxAgeSeconds: 60 * 60 * 24 * 30,
-              },
-              cacheableResponse: {
-                statuses: [200],
-              },
-              fetchOptions: {
-                mode: "cors",
-                credentials: "omit",
-              },
-            },
-          },
-          {
-            // Nightly named releases / never updates
-            urlPattern: /^https:\/\/data\.cataclysmbn-guide\.com\/data\/20/,
-            handler: "CacheFirst",
-            options: {
-              cacheName: "nightly-named-cache-v2",
-              expiration: {
-                maxEntries: 45,
-                maxAgeSeconds: 60 * 60 * 24 * 7, // 1 week
-              },
-              cacheableResponse: {
-                statuses: [200],
-              },
-              fetchOptions: {
-                mode: "cors",
-                credentials: "omit",
               },
             },
           },
