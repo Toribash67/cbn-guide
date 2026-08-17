@@ -8,3 +8,4 @@
 /docs/superpowers/
 pnpm-lock.yaml
 pnpm-workspace.yaml
+/scripts/lib/__fixtures__/
