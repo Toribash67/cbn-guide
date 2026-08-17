@@ -602,12 +602,13 @@ function getLanguageName(code: string): string {
               >{t("Maintainer", {
                 _context: INTRO_DASHBOARD_CONTEXT,
               })}:</span>
-            <a href="https://github.com/ushkinaz" target="_blank">ushkinaz</a>
+            <a href="https://github.com/Toribash67" target="_blank"
+              >Toribash67</a>
           </div>
           <div class="footer-item">
             <span class="spec-label"
               >{t("Code", { _context: INTRO_DASHBOARD_CONTEXT })}:</span>
-            <a href="https://github.com/ushkinaz/cbn-guide/" target="_blank"
+            <a href="https://github.com/Toribash67/cbn-guide/" target="_blank"
               >GitHub</a>
           </div>
           <div class="footer-item">
@@ -615,7 +616,7 @@ function getLanguageName(code: string): string {
               >{t("Feedback", {
                 _context: INTRO_DASHBOARD_CONTEXT,
               })}:</span>
-            <a href="https://discord.gg/XW7XhXuZ89" target="_blank">Discord</a>
+            No
           </div>
         </div>
       </div>
