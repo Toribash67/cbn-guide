@@ -2,7 +2,7 @@ import * as Sentry from "@sentry/browser";
 import { writable } from "svelte/store";
 import type { CBNData } from "./data";
 import { mapType } from "./data";
-import { CBN_DATA_BASE_URL } from "./constants";
+import { CBN_TILES_BASE_URL } from "./constants";
 import { HTTPError, isHTTPError } from "./utils/http-errors";
 import { retry } from "./utils/retry";
 
@@ -172,11 +172,11 @@ function resolvePath(baseUrl: string, file: string): string {
 }
 
 function getModBaseUrl(version: string, modId: string): string {
-  return `${CBN_DATA_BASE_URL}/data/${version}/mods/${encodeURIComponent(modId)}`;
+  return `${CBN_TILES_BASE_URL}/data/${version}/mods/${encodeURIComponent(modId)}`;
 }
 
 function getDataBaseUrl(version: string): string {
-  return `${CBN_DATA_BASE_URL}/data/${version}`;
+  return `${CBN_TILES_BASE_URL}/data/${version}`;
 }
 
 /**
@@ -842,7 +842,7 @@ export function isValidTileset(tilesetID?: string) {
  * @returns {string}
  */
 export const getTilesetUrl = (version: string, path: string): string =>
-  `${CBN_DATA_BASE_URL}/data/${version}/gfx/${path}`;
+  `${CBN_TILES_BASE_URL}/data/${version}/gfx/${path}`;
 
 export const TILESETS: TilesetDefinition[] = [
   //tileinfo prop contains pre-cached data used by the initial layouting phase. Is overridden when actual data comes from the server.
