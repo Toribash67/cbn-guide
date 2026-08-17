@@ -35,6 +35,7 @@
     "check:types": "svelte-check && tsc --noEmit",
     "test": "pnpm lint && pnpm check && pnpm gen:mod-tests && pnpm test:full",
     "test:full": "vitest run src",
+    "test:data": "node --test scripts/lib/*.test.mjs",
     "test:fast": "vitest run src --exclude \"src/all.*.test.ts\" --exclude \"src/__mod_tests__/**\"",
     "test:render:core": "vitest run \"src/all.*.test.ts\"",
     "test:render:mods": "vitest run src/__mod_tests__",
