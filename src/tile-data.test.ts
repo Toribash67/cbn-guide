@@ -5,6 +5,7 @@ import {
   collectActiveModTilesets,
   collectExternalTilesets,
   findTile,
+  getTilesetUrl,
   getTilesetCompatibilityIdentities,
   isContributionCompatible,
   loadMergedTileset,
@@ -167,9 +168,15 @@ describe("tile-data mod_tileset support", () => {
     ).toBe(false);
   });
 
+  test("getTilesetUrl points base tileset graphics at the upstream data host", () => {
+    expect(getTilesetUrl("stable", "MSX++UnDeadPeopleEdition")).toBe(
+      "https://data.cataclysmbn-guide.com/data/stable/gfx/MSX++UnDeadPeopleEdition",
+    );
+  });
+
   test("resolveModChunkUrl resolves mod path and webp conversion", () => {
     expect(resolveModChunkUrl("v0.10.0", "civilians", "gfx/cops.png")).toBe(
-      "/data/v0.10.0/mods/civilians/gfx/cops.webp",
+      "https://data.cataclysmbn-guide.com/data/v0.10.0/mods/civilians/gfx/cops.webp",
     );
 
     expect(
@@ -178,7 +185,9 @@ describe("tile-data mod_tileset support", () => {
         "udp_redux",
         "../../../gfx/MSX++UnDeadPeopleEdition/normal_character.png",
       ),
-    ).toBe("/data/gfx/MSX%2B%2BUnDeadPeopleEdition/normal_character.webp");
+    ).toBe(
+      "https://data.cataclysmbn-guide.com/data/gfx/MSX%2B%2BUnDeadPeopleEdition/normal_character.webp",
+    );
   });
 
   test("resolveExternalChunkUrl resolves external tileset path and webp conversion", () => {
@@ -188,7 +197,7 @@ describe("tile-data mod_tileset support", () => {
         "external_tileset/rabbit_mutations/rabbit_ears.png",
       ),
     ).toBe(
-      "/data/v0.10.0/gfx/external_tileset/rabbit_mutations/rabbit_ears.webp",
+      "https://data.cataclysmbn-guide.com/data/v0.10.0/gfx/external_tileset/rabbit_mutations/rabbit_ears.webp",
     );
   });
 
