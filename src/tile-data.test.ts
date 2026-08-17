@@ -169,7 +169,7 @@ describe("tile-data mod_tileset support", () => {
 
   test("resolveModChunkUrl resolves mod path and webp conversion", () => {
     expect(resolveModChunkUrl("v0.10.0", "civilians", "gfx/cops.png")).toBe(
-      "https://data.cataclysmbn-guide.com/data/v0.10.0/mods/civilians/gfx/cops.webp",
+      "/data/v0.10.0/mods/civilians/gfx/cops.webp",
     );
 
     expect(
@@ -178,9 +178,7 @@ describe("tile-data mod_tileset support", () => {
         "udp_redux",
         "../../../gfx/MSX++UnDeadPeopleEdition/normal_character.png",
       ),
-    ).toBe(
-      "https://data.cataclysmbn-guide.com/data/gfx/MSX%2B%2BUnDeadPeopleEdition/normal_character.webp",
-    );
+    ).toBe("/data/gfx/MSX%2B%2BUnDeadPeopleEdition/normal_character.webp");
   });
 
   test("resolveExternalChunkUrl resolves external tileset path and webp conversion", () => {
@@ -190,7 +188,7 @@ describe("tile-data mod_tileset support", () => {
         "external_tileset/rabbit_mutations/rabbit_ears.png",
       ),
     ).toBe(
-      "https://data.cataclysmbn-guide.com/data/v0.10.0/gfx/external_tileset/rabbit_mutations/rabbit_ears.webp",
+      "/data/v0.10.0/gfx/external_tileset/rabbit_mutations/rabbit_ears.webp",
     );
   });
 
