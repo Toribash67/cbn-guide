@@ -22,6 +22,14 @@ export const BUILDS_URL = `${CBN_DATA_BASE_URL}/builds.json`;
 export const getDataJSONUrl = (version: string, path: string): string =>
   `${CBN_DATA_BASE_URL}/data/${version}/${path}`;
 
+// Upstream public data host — used ONLY by the dev/test fixture-fetch scripts
+// (scripts/fetch-*.ts) to pull render-test fixtures. The app runtime serves
+// same-origin fork data via CBN_DATA_BASE_URL above.
+export const UPSTREAM_DATA_BASE_URL = "https://data.cataclysmbn-guide.com";
+export const UPSTREAM_BUILDS_URL = `${UPSTREAM_DATA_BASE_URL}/builds.json`;
+export const getUpstreamDataJSONUrl = (version: string, path: string): string =>
+  `${UPSTREAM_DATA_BASE_URL}/data/${version}/${path}`;
+
 export const GAME_REPO_PATH = "Toribash67/Cataclysm-BN";
 
 export const GAME_REPO_URL = `https://github.com/${GAME_REPO_PATH}`;

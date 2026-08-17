@@ -18,7 +18,7 @@ import * as fs from "fs/promises";
 import { createReadStream, readFileSync } from "fs";
 import * as crypto from "crypto";
 import * as path from "path";
-import { getDataJSONUrl } from "../src/constants";
+import { getUpstreamDataJSONUrl } from "../src/constants";
 import { fileURLToPath } from "node:url";
 
 interface MetaData {
@@ -92,7 +92,7 @@ async function main() {
   const newMeta: MetaData = { ...currentMeta };
 
   if (fetchAll) {
-    const url = getDataJSONUrl(targetVersion, "all.json");
+    const url = getUpstreamDataJSONUrl(targetVersion, "all.json");
     console.log(`Fetching all.json from ${targetVersion}...`);
     await fetchFile(url, allJsonPath);
     newMeta.sha = await computeSha(allJsonPath);
@@ -106,7 +106,7 @@ async function main() {
   }
 
   if (fetchMods) {
-    const url = getDataJSONUrl(targetVersion, "all_mods.json");
+    const url = getUpstreamDataJSONUrl(targetVersion, "all_mods.json");
     console.log(`Fetching all_mods.json from ${targetVersion}...`);
     await fetchFile(url, allModsJsonPath);
     newMeta.modsSha = await computeSha(allModsJsonPath);

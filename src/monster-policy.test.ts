@@ -293,38 +293,49 @@ describe("monster policy filtering", () => {
   });
 });
 
-describe("monster policy fixtures from local all_mods.json", () => {
-  function loadFixture(): {
-    core: { data: unknown[] };
-    mods: Record<string, ModData>;
-  } {
-    const core = JSON.parse(
-      fs.readFileSync(__dirname + "/../_test/all.json", "utf8"),
-    ) as {
-      data: unknown[];
-    };
-    const mods = JSON.parse(
-      fs.readFileSync(__dirname + "/../_test/all_mods.json", "utf8"),
-    ) as Record<string, ModData>;
-    return { core, mods };
-  }
+// These tests replay real mod data against the upstream fixtures; only run
+// when `_test/all.json` / `_test/all_mods.json` are present locally (fetch
+// via `pnpm fetch:fixtures`). Not committed to keep the repo/CI
+// self-contained and network-free — see `_test/AGENTS.md`.
+const hasModFixtures =
+  fs.existsSync(__dirname + "/../_test/all.json") &&
+  fs.existsSync(__dirname + "/../_test/all_mods.json");
 
-  test("No_Wasps blacklist hides known wasp monsters", () => {
-    const { core, mods } = loadFixture();
-    const merged = [...core.data, ...mods.No_Wasps.data];
-    const data = makeTestCBNData(merged);
+describe.skipIf(!hasModFixtures)(
+  "monster policy fixtures from local all_mods.json",
+  () => {
+    function loadFixture(): {
+      core: { data: unknown[] };
+      mods: Record<string, ModData>;
+    } {
+      const core = JSON.parse(
+        fs.readFileSync(__dirname + "/../_test/all.json", "utf8"),
+      ) as {
+        data: unknown[];
+      };
+      const mods = JSON.parse(
+        fs.readFileSync(__dirname + "/../_test/all_mods.json", "utf8"),
+      ) as Record<string, ModData>;
+      return { core, mods };
+    }
 
-    expect(data.byIdMaybe("monster", "mon_wasp")).toBeUndefined();
-    expect(data.byIdMaybe("monster", "mon_wasp_queen")).toBeUndefined();
-    expect(data.byIdMaybe("monster", "mon_chicken")).toBeDefined();
-  });
+    test("No_Wasps blacklist hides known wasp monsters", () => {
+      const { core, mods } = loadFixture();
+      const merged = [...core.data, ...mods.No_Wasps.data];
+      const data = makeTestCBNData(merged);
 
-  test("classic_zombies exclusive whitelist hides non-whitelisted categories", () => {
-    const { core, mods } = loadFixture();
-    const merged = [...core.data, ...mods.classic_zombies.data];
-    const data = makeTestCBNData(merged);
+      expect(data.byIdMaybe("monster", "mon_wasp")).toBeUndefined();
+      expect(data.byIdMaybe("monster", "mon_wasp_queen")).toBeUndefined();
+      expect(data.byIdMaybe("monster", "mon_chicken")).toBeDefined();
+    });
 
-    expect(data.byIdMaybe("monster", "mon_chicken")).toBeDefined();
-    expect(data.byIdMaybe("monster", "mon_copbot")).toBeUndefined();
-  });
-});
+    test("classic_zombies exclusive whitelist hides non-whitelisted categories", () => {
+      const { core, mods } = loadFixture();
+      const merged = [...core.data, ...mods.classic_zombies.data];
+      const data = makeTestCBNData(merged);
+
+      expect(data.byIdMaybe("monster", "mon_chicken")).toBeDefined();
+      expect(data.byIdMaybe("monster", "mon_copbot")).toBeUndefined();
+    });
+  },
+);

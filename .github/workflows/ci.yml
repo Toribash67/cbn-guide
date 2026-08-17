@@ -7,8 +7,6 @@ on:
     branches: [main, next]
   pull_request:
     branches: [main, next]
-  schedule:
-    - cron: "55 */12 * * *"
 
 jobs:
   build:
@@ -32,18 +30,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      # Run scheduled tests on the latest version of the game, on push - on commited in all.meta.json
-      - name: Fetch fixtures
-        run: |
-          pnpm fetch:builds
-          if [ "$GITHUB_EVENT_NAME" == "schedule" ]; then
-            pnpm fetch:fixtures:nightly
-          else
-            pnpm fetch:fixtures
-          fi
+      - name: Lint
+        run: pnpm lint
 
-      - name: Verify & Test
-        run: pnpm test
+      - name: Typecheck
+        run: pnpm check
+
+      - name: Generator unit tests
+        run: pnpm test:data
+
+      - name: Unit tests
+        run: pnpm test:fast
 
       - name: Build
         run: pnpm build

@@ -126,7 +126,15 @@ describe("copy-from self-looking override chain", () => {
   });
 });
 
-describe("DinoMod regressions", () => {
+// These regressions replay real DinoMod data against the upstream fixtures;
+// only run when `_test/all.json` / `_test/all_mods.json` are present locally
+// (fetch via `pnpm fetch:fixtures`). Not committed to keep the repo/CI
+// self-contained and network-free — see `_test/AGENTS.md`.
+const hasModFixtures =
+  fs.existsSync(__dirname + "/../_test/all.json") &&
+  fs.existsSync(__dirname + "/../_test/all_mods.json");
+
+describe.skipIf(!hasModFixtures)("DinoMod regressions", () => {
   test("mon_ztegosaurus_brute keeps valid melee damage types", () => {
     const coreJSON = JSON.parse(
       fs.readFileSync(__dirname + "/../_test/all.json", "utf8"),
