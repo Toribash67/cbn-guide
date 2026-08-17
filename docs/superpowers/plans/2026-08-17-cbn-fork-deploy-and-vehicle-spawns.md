@@ -427,10 +427,23 @@ Note: `readObjects` / `listJsonFiles` are exported-in-spirit helpers reused by T
 Run: `node --test scripts/lib/generate.test.mjs`
 Expected: PASS (3 tests).
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 6: Exclude fixtures from prettier**
+
+The `game-malformed` fixture is intentionally invalid JSON, so `prettier -c .`
+(run by `pnpm lint`) would fail on it, and prettier reformatting would shift the
+fixture line numbers the `__filename` assertions depend on. Append to
+`.prettierignore`:
+
+```gitignore
+/scripts/lib/__fixtures__/
+```
+
+Verify: `pnpm exec prettier -c scripts/lib/split-json.mjs scripts/lib/generate.mjs scripts/lib/generate.test.mjs scripts/lib/split-json.test.mjs` → no complaints; and `pnpm exec prettier -c .` does not error on the fixtures.
+
+- [ ] **Step 7: Commit**
 
 ```bash
-git add scripts/lib/generate.mjs scripts/lib/generate.test.mjs scripts/lib/__fixtures__
+git add scripts/lib/generate.mjs scripts/lib/generate.test.mjs scripts/lib/__fixtures__ .prettierignore
 git commit -m "feat(data): add core all.json generator"
 ```
 
@@ -494,7 +507,7 @@ test("builds all_mods.json keyed by MOD_INFO id", async () => {
   assert.equal(mod.info.id, "testmod");
   assert.equal(
     mod.info.__filename,
-    "data/mods/testmod/modinfo.json#L2-L7",
+    "data/mods/testmod/modinfo.json#L2-L8",
   );
 
   // MOD_INFO is surfaced as `info`, not repeated in `data`.
