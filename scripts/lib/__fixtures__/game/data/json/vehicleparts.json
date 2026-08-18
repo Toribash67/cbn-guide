@@ -1,0 +1,18 @@
+[
+  {
+    "abstract": "frame",
+    "type": "vehicle_part",
+    "name": { "str": "frame" },
+    "shapes": [
+      { "direction": "vertical", "symbol": "j" },
+      { "direction": "nw", "symbol": "y" }
+    ]
+  },
+  {
+    "id": "wing_mirror",
+    "type": "vehicle_part",
+    "name": { "str": "mirror" },
+    "looks_like": "mirror",
+    "shapes": [{ "direction": "left" }, { "direction": "right" }]
+  }
+]

@@ -39,11 +39,55 @@ async function readObjects(gameDir, file) {
   return out;
 }
 
+// Cataclysm-BN's vehicle-part loader (src/veh_type.cpp) expands any part with a
+// `shapes` array into one concrete part per shape, id `<base>_<direction>`,
+// copying the base and overriding the symbol / looks_like. The web guide reads
+// raw game JSON and resolves `copy-from` at runtime, so we mirror the loader by
+// emitting the same variants as lightweight `copy-from` records — exactly the
+// shape the upstream data set shipped before the game moved to `shapes`.
+// Without this, vehicles that mount shaped parts (frames, boards, mirrors, …)
+// reference ids that never resolve and render as missing parts.
+export function expandVehiclePartShapes(objects) {
+  const variants = [];
+  for (const obj of objects) {
+    if (!obj || obj.type !== "vehicle_part" || !Array.isArray(obj.shapes)) {
+      continue;
+    }
+    // A concrete part keys off its `id`; an abstract keys off `abstract`.
+    const base = typeof obj.id === "string" ? obj.id : obj.abstract;
+    if (typeof base !== "string") continue;
+
+    for (const shape of obj.shapes) {
+      if (!shape || typeof shape.direction !== "string") continue;
+      const variant = {
+        id: `${base}_${shape.direction}`,
+        "copy-from": base,
+        type: "vehicle_part",
+      };
+      if (typeof shape.symbol === "string") variant.symbol = shape.symbol;
+      // Per veh_type.cpp: an explicit per-shape looks_like wins; otherwise a
+      // base looks_like is suffixed with the direction. With neither, the
+      // variant inherits looks_like via copy-from.
+      if (typeof shape.looks_like === "string") {
+        variant.looks_like = shape.looks_like;
+      } else if (typeof obj.looks_like === "string") {
+        variant.looks_like = `${obj.looks_like}_${shape.direction}`;
+      }
+      if (typeof obj.__filename === "string") {
+        variant.__filename = obj.__filename;
+      }
+      variants.push(variant);
+    }
+  }
+  return variants;
+}
+
 export async function buildAllJson(gameDir, opts) {
   const { buildNumber, createdAt, commitSubject } = opts;
   const files = await listJsonFiles(join(gameDir, "data", "json"));
   const data = [];
   for (const file of files) data.push(...(await readObjects(gameDir, file)));
+  data.push(...expandVehiclePartShapes(data));
 
   const release = {
     tag_name: buildNumber,
@@ -82,6 +126,7 @@ export async function buildAllMods(gameDir) {
       }
     }
     if (!info || typeof info.id !== "string") continue; // not a real mod
+    data.push(...expandVehiclePartShapes(data));
     out[info.id] = { info, data };
   }
   return out;
